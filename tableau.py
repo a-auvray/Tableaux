@@ -1,10 +1,47 @@
 import asyncio
+from sqlmodel import SQLModel, Field
+from sqlmodel import create_engine
+from sqlmodel import Session
+from sqlmodel import select
 
-class tableau :
-    def __init__(self, nom, prix, statut) :
-        self.nom = nom
-        self.prix = prix
-        self.statut = statut 
+sqlite_url = "sqlite:///tableaux.db"
+engine = create_engine(sqlite_url)
+
+def creer_tables(): 
+    SQLModel.metadata.create_all(engine)
+
+creer_tables()
+
+class Tableau (SQLModel, table = True) :
+    id: int = Field(default=None, primary_key=True)
+    nom: str
+    prix: float
+    statut: str
+
+
+def ajouter_tableau(nom, prix, statut):
+    with Session(engine) as session:
+        nouveau = Tableau(nom=nom, prix=prix, statut=statut)
+        session.add(nouveau)
+        session.commit()
+
+
+
+def obtenir_tableaux():
+    with Session(engine) as session:
+        resultats = session.exec(select(Tableau)).all
+        return resultats
+
+
+
+
+
+
+
+
+
+
+
 
     def nommer_tableau(self):
         while True:

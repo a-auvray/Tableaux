@@ -1,0 +1,24 @@
+# Environnement virtuel
+.venv/
+
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+
+# Variables d'environnement (mots de passe, clés secrètes)
+.env
+
+# Base de données locale (une fois que tu l'auras, Module 3)
+*.db
+*.sqlite3
+
+# Fichiers uploadés localement en dev (Module 4)
+uploads/
+
+# Fichiers spécifiques à ton éditeur
+.vscode/
+.idea/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
