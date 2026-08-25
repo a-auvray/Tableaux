@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import os 
 import shutil
 from fastapi import UploadFile
-from database import Tableau, obtenir_tableaux, obtenir_un_tableau, ajouter_tableau, modifier_tableau, supprimer_tableau
+from pydantic import BaseModel
+from database import Tableau, obtenir_tableaux, obtenir_un_tableau, ajouter_tableau, modifier_tableau, supprimer_tableau, recuperer_utilisateur, verifier_mdp
 
 
 # CREATION "RESTAURANT"
@@ -19,8 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ajouter_tableau("Mer", 30, "Dispo")
-ajouter_tableau("Foret", 45, "Vendu")
+class LoginInput(BaseModel):
+    email: str 
+    mdp: str
 
 
 
@@ -79,3 +81,14 @@ def uploader_image(id:int, fichier: UploadFile):
         # copie contenu fichier vers nv fichier du disque
         shutil.copyfileobj(fichier.file, buffer)
         return {"chemin": chemin}
+
+
+
+@app.post("/tableau/login")
+def login(donnees: LoginInput):
+    donnees_utilisateur = recuperer_utilisateur(donnees.email)
+    if donnees_utilisateur is None :
+        return None
+
+    #la f verifier_mdp renvoie TRUE/FALSE
+    return verifier_mdp(donnees.mdp, donnees_utilisateur.mdp_hash)
