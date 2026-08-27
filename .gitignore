@@ -8,7 +8,7 @@ __pycache__/
 # Variables d'environnement (mots de passe, clés secrètes)
 .env
 
-# Base de données locale (une fois que tu l'auras, Module 3)
+# Base de données locale
 *.db
 *.sqlite3
 
