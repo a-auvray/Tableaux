@@ -3,6 +3,14 @@ from sqlmodel import create_engine
 from sqlmodel import Session
 from sqlmodel import select
 from passlib.context import CryptContext
+from jose import jwt
+from datetime import datetime, timedelta
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends 
+from fastapi import FastAPI, HTTPException
+
+
+oauth2_scheme = OAuth2PasswordBearer (tokenUrl="tableau/login")
 
 sqlite_url = "sqlite:///tableaux.db"
 engine = create_engine(sqlite_url)
@@ -26,12 +34,24 @@ class Tableau (SQLModel, table = True) :
     statut: str
 
 
+    
+
+
 
 def ajouter_tableau(nom, prix, statut):
     with Session(engine) as session:
         nouveau = Tableau(nom=nom, prix=prix, statut=statut)
         session.add(nouveau)
         session.commit()
+
+
+
+# ==== clé secrete pour le token ======
+
+SECRET_KEY = "change-moi-plus-tard-avec-une-vrai-cle-aleatoire"
+ALGORITHM = "HS256"
+
+
 
 
 
@@ -83,6 +103,33 @@ def supprimer_tableau(id):
 
 # ==================== PARTIE ADMINISTRATEUR =============================
 
+# === TOKEN ===      
+
+def creer_token(id):
+    expiration = datetime.utcnow() + timedelta(minutes=30)
+    payload = {
+        "sub": str(id),
+        "exp": expiration
+    }
+
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
+
+
+# (token:str = Depends(oauth2_scheme)) = avant exec f, prend token dans le header authorization dans la variable token
+# SI il ne trouve pas de header Authorization, erreur 401
+def verifier_token(token:str = Depends(oauth2_scheme)):
+
+    # la f verifier_token s'occupe juste de vérifier si le token est valide
+    try :
+        payload_decode = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        id_uilisateur = payload_decode.get("sub")
+        return id_uilisateur
+    except:
+        raise HTTPException(status_code=401, detail="Token invalide")
+
+# ==============  
+
 
 
 def force_mdp(mdp):
@@ -127,6 +174,25 @@ def hasher_mdp(mdp):
 # MDP EN QUESTION EST CELUI QUE UTILISATEUR VIENT DE TAPER PAS LANCIEN
 def verifier_mdp(mdp, hash_stocke):
     return pwd_context.verify(mdp, hash_stocke)
+
+
+def changer_mdp(id, nouveau_mdp):
+    if not force_mdp(nouveau_mdp):
+        return "Le mot de passe doit posséder au moins 8 caractères, un caractère spécial et une majuscule"
+
+    with Session(engine) as session:
+        utilisateur = session.get(Utilisateur, id)
+        if utilisateur is None:
+            return None
+
+        utilisateur.mdp_hash = hasher_mdp(nouveau_mdp)
+
+        session.add(utilisateur)
+        session.commit()
+        session.refresh(utilisateur)
+        return utilisateur
+
+
 
 
 
