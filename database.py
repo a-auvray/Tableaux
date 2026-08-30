@@ -123,8 +123,8 @@ def verifier_token(token:str = Depends(oauth2_scheme)):
     # la f verifier_token s'occupe juste de vérifier si le token est valide
     try :
         payload_decode = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-        id_uilisateur = payload_decode.get("sub")
-        return id_uilisateur
+        id_utilisateur = payload_decode.get("sub")
+        return id_utilisateur
     except:
         raise HTTPException(status_code=401, detail="Token invalide")
 
@@ -181,18 +181,12 @@ def changer_mdp(id, nouveau_mdp):
         return "Le mot de passe doit posséder au moins 8 caractères, un caractère spécial et une majuscule"
 
     with Session(engine) as session:
-        utilisateur = session.get(Utilisateur, id)
+        print("ID reçu:", id, "type:", type(id))
+        utilisateur = session.get(Utilisateur, int(id))
+        print("Utilisateur trouvé:", utilisateur)
         if utilisateur is None:
             return None
-
-        utilisateur.mdp_hash = hasher_mdp(nouveau_mdp)
-
-        session.add(utilisateur)
-        session.commit()
-        session.refresh(utilisateur)
-        return utilisateur
-
-
+        
 
 
 
@@ -218,10 +212,14 @@ def creer_utilisateur(email, mdp):
 
         else:
             return "Le mot de passe doit posséder au moins 8 caractères, un caractère spécial et une majuscule"
-# creer_tables()
 
 
 def recuperer_utilisateur(email):
     with Session(engine) as session: 
         user = session.exec(select(Utilisateur).where(Utilisateur.email == email)).first()
         return user
+
+
+creer_tables()
+
+creer_utilisateur(email="antoinea333p@gmail.com", mdp="nuzjys-2hAbro-riqrug")

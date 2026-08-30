@@ -127,8 +127,8 @@ def login(donnees: LoginInput):
 
 
 # ======== CHANGER MDP ========
-@app.put("/tableau/password_change")
-def route_changer_mdp(donnees: ChangerMDPInput, id_utilisateur: str = Depends(verifier_token)):
+@app.put("/changer_mdp")
+def route_changer_mdp(donnees: ChangerMDPInput, id_utilisateur: int = Depends(verifier_token)):
     resultat = changer_mdp(id_utilisateur, donnees.nouveau_mdp)
 
 
