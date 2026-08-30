@@ -132,6 +132,10 @@ def verifier_token(token:str = Depends(oauth2_scheme)):
 
 
 
+
+# === MDP === 
+
+
 def force_mdp(mdp):
     mdp_force = False
     mdp_test = mdp
@@ -181,12 +185,17 @@ def changer_mdp(id, nouveau_mdp):
         return "Le mot de passe doit posséder au moins 8 caractères, un caractère spécial et une majuscule"
 
     with Session(engine) as session:
-        print("ID reçu:", id, "type:", type(id))
         utilisateur = session.get(Utilisateur, int(id))
-        print("Utilisateur trouvé:", utilisateur)
         if utilisateur is None:
             return None
-        
+
+        utilisateur.mdp_hash = hasher_mdp(nouveau_mdp)
+        session.add(utilisateur)
+        session.commit()
+        session.refresh(utilisateur)
+        return utilisateur
+
+    # ==============  
 
 
 
@@ -220,6 +229,6 @@ def recuperer_utilisateur(email):
         return user
 
 
-creer_tables()
+# creer_tables()
 
-creer_utilisateur(email="antoinea333p@gmail.com", mdp="nuzjys-2hAbro-riqrug")
+# creer_utilisateur(email="antoinea333p@gmail.com", mdp="nuzjys-2hAbro-riqrug")

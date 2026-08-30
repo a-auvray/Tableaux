@@ -127,9 +127,13 @@ def login(donnees: LoginInput):
 
 
 # ======== CHANGER MDP ========
-@app.put("/changer_mdp")
-def route_changer_mdp(donnees: ChangerMDPInput, id_utilisateur: int = Depends(verifier_token)):
+# === ROUTE SENSIBLE ===
+@app.put("/changer-mdp")
+def route_changer_mdp(donnees: ChangerMDPInput, id_utilisateur: str = Depends(verifier_token)):
     resultat = changer_mdp(id_utilisateur, donnees.nouveau_mdp)
+    if resultat is None:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    return {"message": "Mot de passe changé avec succès"}
 
 
 
